@@ -55,6 +55,14 @@ def write_list_to_csv(file_name, _list):
     with (DB_ROOT / file_name).open("w") as file:
         writer = csv.writer(file)
         writer.writerows(_list)
+        
+        
+def create_hash_table(_list, keys_of_hash):
+    hash_table = defaultdict(list)
+    for row in _list:
+        key = ''.join([row[fields] for fields in keys_of_hash])
+        hash_table[key].append(row)
+    return hash_table
 
 
 @dataclass_json
@@ -142,7 +150,7 @@ class DBTable(db_api.DBTable):
 
     def query_table(self, criteria: List[db_api.SelectionCriteria]) -> List[Dict[str, Any]]:
         suitable = []
-        for row in self.get_rows_of_first_query(criteria[0]):  # TODO check if there is index everywhere
+        for row in self.get_rows_of_first_query(criteria[0]):
             for query in criteria[1:]:
                 if not self.row_is_suitable(row, query):
                     break
@@ -233,7 +241,7 @@ class DBTable(db_api.DBTable):
                     row = get_row_from_file(file, row_index)
                     yield row
 
-    def get_rows_by_full_scan(self, criteria):  # TODO check deleted arr
+    def get_rows_by_full_scan(self, criteria):
         for block in get_table_data_files(self.name):
             with block.open("r") as file:
                 reader = csv.reader(file)
@@ -272,24 +280,10 @@ class DBTable(db_api.DBTable):
             r[row_index - 1] = self.list_data_dict_in_order(new_row)
         write_list_to_csv(_file, r)
 
-    def create_index(self, field_to_index: str) -> None:
-        pass
-
 
 db_metadata = {}
 table_metadata = {}
 types = {"str": str, "int": int, "datetime": datetime}
-
-
-# with (DB_ROOT / "metadata.json").open() as metafile:
-# metadata = json.load(metafile)
-
-def create_hash_table(_list, keys_of_hash):
-    hash_table = defaultdict(list)
-    for row in _list:
-        key = ''.join([row[fields] for fields in keys_of_hash])
-        hash_table[key].append(row)
-    return hash_table
 
 
 @dataclass_json
@@ -343,7 +337,7 @@ class DataBase(db_api.DataBase):
             table.key_index = json.load(metadata_file)
         return table
 
-    def delete_table(self, table_name: str) -> None:  # TODO if table empty
+    def delete_table(self, table_name: str) -> None:
         if not self.table_exist(table_name):
             raise ValueError("table not exist")
 
