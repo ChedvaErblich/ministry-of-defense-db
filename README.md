@@ -27,7 +27,7 @@ to make sure you have not violated the existing code
 
 ### Executing test
 
--pip install pytest
--run "create_db_backup.py"
-for run spesific test command "py.test -d {test_name}"
+-pip install pytest/
+-run "create_db_backup.py"/
+for run spesific test command "py.test -k {test_name}"/
 for run all tests command: "py.test"
