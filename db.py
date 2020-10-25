@@ -8,14 +8,6 @@ from typing import Any, Dict, List
 from dataclasses_json import dataclass_json
 import db_api
 
-'''
-TODO:
-make a different metadata json file and local variable for each table,
-check block size,
-take care of date type,
-create index : give a 3 options create by it a key_index in the begin...
-'''
-
 BLOCK_SIZE = 25
 DB_ROOT = Path('db_files')
 
@@ -43,7 +35,7 @@ def validate_fields(fields, given_fields) -> bool:
     return False
 
 
-def get_num_of_file(num):  # TODO call this func
+def get_num_of_file(num):
     return num // BLOCK_SIZE
 
 
@@ -71,8 +63,6 @@ class DBTable(db_api.DBTable):
     fields: List[db_api.DBField]
     key_field_name: str
     key_index: dict = field(default_factory=dict)
-
-    # metadata = {"list deleted" :[],  "count_rows":0 , "indexes": ["key"]}  # {list deleted :[],  "count_rows": , "indexes": ["key"]}  -> TableName_metadata.json
 
     def __post_init__(self):
         my_file = Path(DB_ROOT / f'{self.key_field_name}_index_{self.name}.json')
@@ -108,7 +98,7 @@ class DBTable(db_api.DBTable):
         self.delete_keys_from_key_index([key])
 
     def delete_records(self,
-                       criteria: List[db_api.SelectionCriteria]) -> None:  # TODO do not call update fot each line...
+                       criteria: List[db_api.SelectionCriteria]) -> None: 
         rows = self.query_table(criteria)
 
         rows_keys = self.get_rows_keys(rows)
@@ -144,7 +134,7 @@ class DBTable(db_api.DBTable):
 
     def query_table(self, criteria: List[db_api.SelectionCriteria]) -> List[Dict[str, Any]]:
         suitable = []
-        for row in self.get_rows_of_first_query(criteria[0]):  # TODO check if there is index everywhere
+        for row in self.get_rows_of_first_query(criteria[0]):  
             for query in criteria[1:]:
                 if not self.row_is_suitable(row, query):
                     break
@@ -235,7 +225,7 @@ class DBTable(db_api.DBTable):
                     row = get_row_from_file(file, row_index)
                     yield row
 
-    def get_rows_by_full_scan(self, criteria):  # TODO check deleted arr
+    def get_rows_by_full_scan(self, criteria): 
         for block in get_table_data_files(self.name):
             with block.open("r") as file:
                 reader = csv.reader(file)
@@ -281,10 +271,6 @@ class DBTable(db_api.DBTable):
 db_metadata = {}
 table_metadata = {}
 types = {"str": str, "int": int, "datetime": datetime}
-
-
-# with (DB_ROOT / "metadata.json").open() as metafile:
-# metadata = json.load(metafile)
 
 def create_hash_table(_list, keys_of_hash):
     hash_table = defaultdict(list)
@@ -346,7 +332,7 @@ class DataBase(db_api.DataBase):
             table.key_index = json.load(metadata_file)
         return table
 
-    def delete_table(self, table_name: str) -> None:  # TODO if table empty
+    def delete_table(self, table_name: str) -> None: 
         if not self.table_exist(table_name):
             raise ValueError("table not exist")
 
